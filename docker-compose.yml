@@ -1,0 +1,76 @@
+version: "3.9"
+   
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+  web:
+    build: .
+    command: >
+      bash -c "python manage.py makemigrations 
+      && python manage.py migrate
+      && python manage.py collectstatic --noinput --clear
+      && gunicorn core.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - static_volume:/code/staticfiles
+    expose:
+    - 8000
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+    depends_on:
+      - db
+  redis:
+    image: redis:6-alpine
+  
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: django_celery_worker
+    command: bash -c "celery -A core worker -l INFO"
+    volumes:
+      - .:/code
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+    depends_on:
+      - redis
+      - db
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: django_celery_beat
+    command: >
+      bash -c "rm -f './celerybeat.pid'
+      && celery -A core beat -l INFO"
+    volumes:
+      - .:/code
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+    depends_on:
+      - redis
+      - db
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/code/staticfiles
+    ports:
+      - 80:80
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
