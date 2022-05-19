@@ -167,6 +167,9 @@ GRAPHENE = {
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
 }
+GRAPHQL_JWT = {
+    'JWT_PAYLOAD_HANDLER': 'graphql_api.utils.jwt_payload',
+}
 
 AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',

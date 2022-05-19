@@ -3,10 +3,15 @@
 Best RSS reader u ever seen :)
 
 for run (obviously u need docker and docker-compose):
-```sudo docker-compose up --build```
+
+```bash
+sudo docker-compose up --build
+```
 
 for refreshing all feed manually:
-```python3 manage.py refreshfeeds```
+```bash
+python3 manage.py refreshfeeds
+```
 
 some curl example for graphql:
 ```bash
@@ -18,7 +23,8 @@ curl http://localhost:/graphql -H "Authorization: JWT $token" -d query='mutation
 ```
 
 some graphql example query:
-```
+
+```bash
 mutation createUser {
   createUser(username: "<your_username>", password: "<your_password>", email: "<your_email>") {
     token
@@ -62,7 +68,7 @@ query allSources {
   allSources
   {
     name,
-    id 
-  } 
+    id
+  }
 }
 ```
